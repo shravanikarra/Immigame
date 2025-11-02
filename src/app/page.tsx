@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/Brand/Logo";
 import { Stepper } from "@/components/ui/Stepper";
 import { StepShell } from "@/components/Steps/StepShell";
@@ -29,9 +29,10 @@ export default function Home() {
     return 1;
   });
 
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Prevent scrolling to incomplete steps
   useEffect(() => {
-    let scrollTimeout: NodeJS.Timeout;
     let isScrolling = false;
 
     const handleScroll = () => {
@@ -136,7 +137,10 @@ export default function Home() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("wheel", handleWheel);
-      clearTimeout(scrollTimeout);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = null;
+      }
     };
   }, [state.citizenship, state.destination]);
 
