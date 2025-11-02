@@ -31,7 +31,7 @@ export function StepShell({
     if (typeof window !== "undefined") {
       type WindowWithScrollToStep = Window &
         Record<string, (() => void) | undefined>;
-      (window as WindowWithScrollToStep)[`scrollToStep${stepNumber}`] = () => {
+      (window as unknown as WindowWithScrollToStep)[`scrollToStep${stepNumber}`] = () => {
         sectionRef.current?.scrollIntoView({
           behavior: "smooth",
           block: "start",
