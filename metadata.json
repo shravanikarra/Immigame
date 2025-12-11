@@ -1,0 +1,5 @@
+{
+  "name": "Immigame",
+  "description": "A gamified immigration companion app that turns the complex immigration process into a manageable, Duolingo-style journey. Features an AI assistant 'Immi', a community forum, and real-time policy updates.",
+  "requestFramePermissions": []
+}
