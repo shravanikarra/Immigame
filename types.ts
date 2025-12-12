@@ -1,57 +1,40 @@
-export interface User {
+export interface UserProfile {
   id: string;
   name: string;
-  avatar: string;
-  xp: number;
-  streak: number;
-  currentStageId: string;
-  originCountry: string;
-  destinationCountry: string;
+  citizenship: string; // Origin
 }
 
-export interface Stage {
+export interface VisaOption {
+  id: string;
+  country: string;
+  visaName: string; // e.g., "H-1B", "Job Seeker"
+  intent: string; // "Work", "Study"
+  maxDuration: string;
+  processingTime: string;
+  difficulty: 'Low' | 'Medium' | 'High';
+  requirementsSummary: string;
+}
+
+export interface ChecklistStep {
   id: string;
   title: string;
   description: string;
-  status: 'locked' | 'active' | 'completed';
-  type: 'quiz' | 'document' | 'info';
-  icon: string; // Lucide icon name or similar
+  isCompleted: boolean;
+  status: 'active' | 'locked' | 'completed';
+  requiredDoc?: string;
 }
 
-export interface ForumPost {
+export interface ApplicationInstance {
   id: string;
-  userId: string;
-  userName: string;
-  userAvatar: string;
-  title: string;
-  content: string;
-  likes: number;
-  comments: number;
-  timestamp: string;
-  tags: string[];
-}
-
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'model';
-  text: string;
-  timestamp: Date;
-}
-
-export interface NewsUpdate {
-  id: string;
-  headline: string;
-  summary: string;
-  sourceUrl?: string;
-  date: string;
-  impactLevel: 'low' | 'medium' | 'high';
+  visaOption: VisaOption;
+  startDate: string;
+  progress: number; // 0 to 100
+  currentStepIndex: number;
+  steps: ChecklistStep[];
 }
 
 export enum AppView {
-  LOGIN = 'LOGIN',
-  DASHBOARD = 'DASHBOARD',
-  FORUM = 'FORUM',
-  ASSISTANT = 'ASSISTANT',
-  NEWS = 'NEWS',
+  DISCOVERY = 'DISCOVERY',
+  BINDER = 'BINDER',
   PROFILE = 'PROFILE'
 }

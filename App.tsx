@@ -1,27 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import Navigation from './components/Navigation';
-import Dashboard from './components/Dashboard';
-import Assistant from './components/Assistant';
-import Forum from './components/Forum';
-import News from './components/News';
+import DiscoveryMatrix from './components/DiscoveryMatrix';
+import ApplicationBinder from './components/ApplicationBinder';
 import Auth from './components/Auth';
-import { AppView, User } from './types';
+import { AppView, UserProfile, VisaOption, ApplicationInstance } from './types';
+import { generateApplicationChecklist } from './services/geminiService';
 
 // Mock initial user
-const INITIAL_USER: User = {
-  id: 'user-1',
-  name: 'Alex',
-  avatar: 'https://picsum.photos/seed/alex/100/100',
-  xp: 1250,
-  streak: 5,
-  currentStageId: '2',
-  originCountry: 'Mexico',
-  destinationCountry: 'United States'
+const INITIAL_USER: UserProfile = {
+  id: 'u1',
+  name: 'Arjun Gupta',
+  citizenship: 'India'
 };
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [currentView, setCurrentView] = useState<AppView>(AppView.DASHBOARD);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [currentView, setCurrentView] = useState<AppView>(AppView.DISCOVERY);
+  const [applications, setApplications] = useState<ApplicationInstance[]>([]);
   const [isMobile, setIsMobile] = useState(false);
 
   // Responsive check
@@ -33,52 +28,112 @@ const App: React.FC = () => {
   }, []);
 
   const handleLogin = () => {
-    // In a real app, this would verify credentials
     setUser(INITIAL_USER);
-    setCurrentView(AppView.DASHBOARD);
+    setCurrentView(AppView.DISCOVERY);
   };
 
   const handleLogout = () => {
     setUser(null);
-    setCurrentView(AppView.LOGIN);
   };
 
-  // Render Logic
+  const handleStartApplication = async (option: VisaOption) => {
+    // 0. Check for existing application to prevent duplicates
+    const existingAppIndex = applications.findIndex(
+        app => app.visaOption.country === option.country && app.visaOption.visaName === option.visaName
+    );
+
+    if (existingAppIndex !== -1) {
+        // If exists, move it to the top (so it's selected in Binder) and switch view
+        const existingApp = applications[existingAppIndex];
+        const otherApps = applications.filter((_, idx) => idx !== existingAppIndex);
+        setApplications([existingApp, ...otherApps]);
+        setCurrentView(AppView.BINDER);
+        return;
+    }
+
+    // 1. Fetch the static checklist (Snapshot pattern)
+    const steps = await generateApplicationChecklist(option.visaName, option.country);
+    
+    // 2. Create new instance
+    const newApp: ApplicationInstance = {
+      id: `app-${Date.now()}`,
+      visaOption: option,
+      startDate: new Date().toLocaleDateString(),
+      progress: 0,
+      currentStepIndex: 0,
+      steps: steps
+    };
+
+    setApplications(prev => [newApp, ...prev]);
+    setCurrentView(AppView.BINDER);
+  };
+
+  const handleUpdateProgress = (appId: string, stepId: string) => {
+    setApplications(prev => prev.map(app => {
+      if (app.id !== appId) return app;
+
+      // Update steps logic
+      const newSteps = app.steps.map((step, idx) => {
+        if (step.id === stepId) {
+            return { ...step, isCompleted: true, status: 'completed' as const };
+        }
+        // Unlock next step
+        if (idx > 0 && app.steps[idx - 1].id === stepId) {
+             return { ...step, status: 'active' as const };
+        }
+        return step;
+      });
+
+      // Simple unlock next logic for the immediate next one if previous completed
+      const currentIndex = app.steps.findIndex(s => s.id === stepId);
+      if (currentIndex !== -1 && currentIndex < app.steps.length - 1) {
+          newSteps[currentIndex + 1].status = 'active';
+      }
+
+      const completedCount = newSteps.filter(s => s.isCompleted).length;
+      const progress = (completedCount / newSteps.length) * 100;
+
+      return {
+        ...app,
+        steps: newSteps,
+        progress
+      };
+    }));
+  };
+
   if (!user) {
     return <Auth onLogin={handleLogin} />;
   }
 
   const renderContent = () => {
     switch (currentView) {
-      case AppView.DASHBOARD:
-        return <Dashboard user={user} />;
-      case AppView.ASSISTANT:
-        return <Assistant />;
-      case AppView.NEWS:
-        return <News />;
-      case AppView.FORUM:
-        return <Forum />;
+      case AppView.DISCOVERY:
+        return <DiscoveryMatrix user={user} onStartApplication={handleStartApplication} />;
+      case AppView.BINDER:
+        return <ApplicationBinder applications={applications} onUpdateProgress={handleUpdateProgress} />;
       case AppView.PROFILE:
         return (
-            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                <img src={user.avatar} className="w-32 h-32 rounded-full border-4 border-gray-100 mb-4" alt="profile"/>
-                <h2 className="text-3xl font-black text-gray-800">{user.name}</h2>
-                <p className="text-gray-500 font-bold text-lg mb-8">{user.originCountry} → {user.destinationCountry}</p>
+            <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-white">
+                <div className="w-24 h-24 bg-slate-900 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4">
+                    {user.name.charAt(0)}
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900">{user.name}</h2>
+                <p className="text-slate-500 font-medium mb-8">Citizenship: {user.citizenship}</p>
                 <button 
                   onClick={handleLogout}
-                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-xl w-full max-w-xs"
+                  className="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-semibold py-2 px-6 rounded-lg transition-colors"
                 >
                     Sign Out
                 </button>
             </div>
         );
       default:
-        return <Dashboard user={user} />;
+        return <DiscoveryMatrix user={user} onStartApplication={handleStartApplication} />;
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F7F7F7]">
+    <div className="flex min-h-screen bg-[#f8fafc]">
       <Navigation 
         currentView={currentView} 
         setView={setCurrentView} 
@@ -86,7 +141,7 @@ const App: React.FC = () => {
         onLogout={handleLogout}
       />
       
-      <main className={`flex-1 ${isMobile ? 'mb-16' : 'ml-64'} transition-all duration-300`}>
+      <main className={`flex-1 ${isMobile ? 'mb-20' : 'ml-64'} transition-all duration-300`}>
         {renderContent()}
       </main>
     </div>
