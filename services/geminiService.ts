@@ -1,7 +1,13 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { NewsUpdate, Stage } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Validate API key early to provide clear error messages
+const apiKey = process.env.API_KEY;
+if (!apiKey || apiKey.trim() === '') {
+  console.error('Error: GEMINI_API_KEY or API_KEY environment variable is not set. Please add it to your .env.local file.');
+}
+
+const ai = new GoogleGenAI({ apiKey: apiKey || '' });
 
 const MODEL_FAST = 'gemini-2.5-flash';
 
