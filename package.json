@@ -4,10 +4,11 @@
   "version": "1.0.1",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   },
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/ensure-rollup-binary.js",
     "build": "tsc && vite build",
     "vercel-build": "npm run build",
     "preview": "vite preview"
