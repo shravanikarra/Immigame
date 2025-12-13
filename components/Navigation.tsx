@@ -1,6 +1,7 @@
 import React from 'react';
-import { Search, Briefcase, User, LogOut, Globe } from 'lucide-react';
+import { Search, Briefcase, User, LogOut } from 'lucide-react';
 import { AppView } from '../types';
+import BrandLogo from './BrandLogo';
 
 interface NavigationProps {
   currentView: AppView;
@@ -38,12 +39,10 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, setView, isMobile,
   return (
     <div className="fixed top-0 left-0 h-full w-64 bg-slate-900 text-white flex flex-col z-50 shadow-2xl">
       <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-        <div className="bg-secondary p-2 rounded-lg">
-          <Globe size={24} className="text-white" />
-        </div>
+        <BrandLogo size={52} />
         <div>
-          <h1 className="text-xl font-bold tracking-tight">ImmiMatrix</h1>
-          <p className="text-xs text-slate-400 uppercase tracking-widest">Global Access</p>
+          <h1 className="text-xl font-bold tracking-tight">Immigame</h1>
+          <p className="text-xs text-slate-400 uppercase tracking-widest">Visa Intelligence</p>
         </div>
       </div>
 
