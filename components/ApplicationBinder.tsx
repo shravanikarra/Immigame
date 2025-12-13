@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { CheckCircle, Circle, Lock, FileText, ChevronRight, Briefcase } from 'lucide-react';
-import { ApplicationInstance, ChecklistStep } from '../types';
+import { CheckCircle, Lock, FileText, ChevronRight, Briefcase } from 'lucide-react';
+import { ApplicationInstance } from '../types';
 
 interface ApplicationBinderProps {
   applications: ApplicationInstance[];

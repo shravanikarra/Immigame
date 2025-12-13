@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ArrowRight, Clock, Calendar, AlertCircle } from 'lucide-react';
+import { Search, Clock, Calendar, AlertCircle } from 'lucide-react';
 import { VisaOption, UserProfile } from '../types';
 import { discoverVisaOptions } from '../services/geminiService';
 

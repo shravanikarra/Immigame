@@ -1,7 +1,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { VisaOption, ChecklistStep } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// @ts-ignore - Injected by Vite config
+const API_KEY = process.env.API_KEY || '';
+const ai = new GoogleGenAI({ apiKey: API_KEY });
 const MODEL_NAME = 'gemini-2.5-flash';
 
 // --- Phase 1: The Discovery Matrix ---
